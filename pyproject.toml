@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "knapsack-benchmark"
+version = "0.1.0"
+description = "Benchmark of 0-1 knapsack algorithms (DP, branch and bound, ILP, QUBO): Python version of knapsack-benchmark-matlab"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.9",        # scipy.optimize.milp (HiGHS) for the ILP algorithm
+]
+
+[project.optional-dependencies]
+memory = ["psutil>=5.9"]  # process memory snapshots (otherwise null)
+test = ["pytest>=7"]
+
+[project.scripts]
+knapsack-benchmark = "knapsack_benchmark.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/knapsack_benchmark"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: full 100-instance parity run (deselect with -m 'not slow')"]
