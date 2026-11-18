@@ -39,9 +39,9 @@ def summarize(runs: list[dict], algos: list[str], total_time: float) -> dict:
             "mean_operations": _stat(ops, statistics.mean),
             "max_operations": _stat(ops, max),
             "operations_unit": res[0]["cost"]["operations_unit"],
-            "median_time_ratio_vs_dp": _stat([x["cost_ratio_vs_dp"]["time"] for x in res],
+            "median_time_ratio_vs_reference": _stat([x["cost_ratio_vs_reference"]["time"] for x in res],
                                              statistics.median),
-            "median_memory_ratio_vs_dp": _stat([x["cost_ratio_vs_dp"]["memory"] for x in res],
+            "median_memory_ratio_vs_reference": _stat([x["cost_ratio_vs_reference"]["memory"] for x in res],
                                                statistics.median),
             "by_family": [],
         }

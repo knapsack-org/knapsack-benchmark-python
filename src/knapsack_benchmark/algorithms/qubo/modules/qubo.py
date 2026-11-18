@@ -1,4 +1,4 @@
-"""QUBO approach to the 0-1 knapsack (port of kb_knapsack2qubo.m, kb_qubo_tabu*.m,
+"""QUBO approach to the 0-1 knapsack (port of modules/kb_knapsack2qubo.m, kb_qubo_tabu*.m,
 kb_decode.m, kb_encode_slack.m).
 
 Model (same as MATLAB's ``knapsack2qubo``):
@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ...helpers.rng import lcg, mround, seed_state
+from ....helpers.rng import lcg, mround, seed_state
 
 
 def slack_coefficients(M: int) -> list[int]:

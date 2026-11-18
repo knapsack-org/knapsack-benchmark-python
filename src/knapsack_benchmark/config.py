@@ -1,47 +1,30 @@
-"""Default parameters (same keys and values as benchmark_config.m).
+"""Parameters of the benchmark (port of benchmark_config.m).
 
-Each algorithm has its own settings block ``cfg[<id>]``, whose defaults come from
-``algorithms/<id>/config_<id>.py``; the registry ``ALGORITHMS`` is in
-``algorithms/algorithm_loader.py``. The instance generator's block ``cfg["instances"]``
-comes from ``instances/config_instances.py``.
+``benchmark_config()`` returns the settings used by ``run_benchmark``:
+    seed        master seed (below)
+    instances   instance generator, from instances/config_instances.py
+    algorithms  ids of every folder of algorithms/ (alphabetical)
+    <id>        settings of algorithm <id>, from algorithms/<id>/kp_algo_<id>_config.py
+    timing      Python-only measurement options (below)
+There are no run-time overrides: to change a setting, edit the file that defines it.
 """
 from __future__ import annotations
 
-import copy
-
-from .algorithms.algorithm_loader import ALGORITHMS, default_configs
+from .helpers.discover import algorithm_ids, contract_module
 from .instances.config_instances import config_instances
 
 
-def _defaults() -> dict:
+def benchmark_config() -> dict:
+    ids = algorithm_ids()
     cfg = {
         "seed": 2026,              # master seed: same seed -> same instances and results
-        "instances": config_instances(),  # instance generator: instances/config_instances.py
-        "algorithms": list(ALGORITHMS),   # benchmarked, in this order (dp = reference)
+        "instances": config_instances(),
+        "algorithms": ids,
     }
-    cfg.update(default_configs())  # settings blocks cfg["dp"], cfg["bnb"], ... (each has "repeats")
+    for algo_id in ids:
+        cfg[algo_id] = getattr(contract_module(algo_id, "config"), f"kp_algo_{algo_id}_config")()
     cfg["timing"] = {
-        "trace_memory": False,     # extra untimed run per algorithm under tracemalloc (slow)
+        "trace_memory": False,     # True: extra untimed run per algorithm under tracemalloc
+                                   # (peak bytes in cost.traced_peak_memory_bytes; ~6x slower)
     }
     return cfg
-
-
-def benchmark_config(overrides: dict | None = None) -> dict:
-    """Defaults, with OVERRIDES merged field by field (nested dicts are merged).
-
-    Example: benchmark_config({"qubo_chz": {"tabu": {"restarts": 50}}})
-    """
-    cfg = _defaults()
-    if overrides:
-        _merge(cfg, overrides, "")
-    return cfg
-
-
-def _merge(base: dict, over: dict, prefix: str) -> None:
-    for key, value in over.items():
-        if key not in base:
-            raise KeyError(f'Unknown option "{prefix}{key}"')
-        if isinstance(base[key], dict) and isinstance(value, dict):
-            _merge(base[key], value, f"{prefix}{key}.")
-        else:
-            base[key] = copy.deepcopy(value)

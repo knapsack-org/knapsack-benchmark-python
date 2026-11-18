@@ -3,12 +3,15 @@
 import numpy as np
 import pytest
 
-from knapsack_benchmark.algorithms.qubo import qubo as q
-from knapsack_benchmark.algorithms.qubo_chz import qubo_chz as qz
-from knapsack_benchmark.algorithms.bnb.bnb import knapsack_bnb
+from knapsack_benchmark.algorithms.bnb.kp_algo_bnb_main import kp_algo_bnb_main
+from knapsack_benchmark.algorithms.dp.kp_algo_dp_main import kp_algo_dp_main
+from knapsack_benchmark.algorithms.ilp.kp_algo_ilp_main import kp_algo_ilp_main
+from knapsack_benchmark.algorithms.qubo.kp_algo_qubo_config import kp_algo_qubo_config
+from knapsack_benchmark.algorithms.qubo.modules import qubo as q
+from knapsack_benchmark.algorithms.qubo_chz.modules import qubo_chz as qz
 from knapsack_benchmark.config import benchmark_config
-from knapsack_benchmark.algorithms.dp.dp import knapsack_dp
-from knapsack_benchmark.algorithms.ilp.ilp import knapsack_ilp
+from knapsack_benchmark.helpers.discover import discover_algorithms
+from knapsack_benchmark.helpers.schema import SchemaError, validate
 from knapsack_benchmark.instances.instances import generate_instances
 
 W = [23, 31, 29, 44, 53, 38, 63, 85, 89, 82]
@@ -16,15 +19,41 @@ V = [92, 57, 49, 68, 60, 43, 67, 84, 87, 72]
 C = 165
 
 
-@pytest.mark.parametrize("solver", [knapsack_dp, knapsack_bnb, knapsack_ilp])
+def test_every_algorithm_on_p01():
+    """Every algorithm of algorithms/, as the benchmark runs it (no edit needed for a new one)."""
+    cfg = benchmark_config()
+    algos, _ = discover_algorithms()
+    assert sum(a["reference"] for a in algos) == 1
+    v, w = np.array(V, float), np.array(W, float)
+    for a in algos:
+        out = a["output"].run(v, w, C, cfg[a["id"]], cfg["seed"])
+        idx = np.array(out["items"], dtype=int) - 1
+        assert w[idx].sum() <= C, a["id"]
+        if a["exact"]:
+            assert v[idx].sum() == 309, a["id"]
+        validate(out["details"], a["output"].SCHEMA["details"], f"{a['id']}.details")
+        validate(a["output"].entry(cfg[a["id"]], a["environment"]), a["output"].SCHEMA["entry"],
+                 a["id"])
+
+
+def test_schema_validator_rejects():
+    s = {"type": "object", "additionalProperties": False, "required": ["a"],
+         "properties": {"a": {"type": "integer", "minimum": 0}}}
+    validate({"a": 2}, s)
+    for bad in ({"a": -1}, {"a": 1.5}, {"a": True}, {"b": 1}, {"a": 1, "b": 2}, [1]):
+        with pytest.raises(SchemaError):
+            validate(bad, s)
+
+
+@pytest.mark.parametrize("solver", [kp_algo_dp_main, kp_algo_bnb_main, kp_algo_ilp_main])
 def test_exact_solvers_p01(solver):
-    best, items, _ = solver(V, W, C)
-    assert best == 309 and items == [1, 2, 3, 4, 6]
+    items, info = solver(V, W, C)
+    assert info["value"] == 309 and items == [1, 2, 3, 4, 6]
 
 
 def test_bnb_node_limit():
-    best, _, info = knapsack_bnb(V, W, C, max_nodes=3)
-    assert best <= 309
+    _, info = kp_algo_bnb_main(V, W, C, {"max_nodes": 3})
+    assert info["value"] <= 309
 
 
 def test_mathworks_knapsack2qubo_example():
@@ -35,7 +64,7 @@ def test_mathworks_knapsack2qubo_example():
 
 
 def _opts(seed=1):
-    return dict(benchmark_config()["qubo"]["tabu"], seed=seed)
+    return dict(kp_algo_qubo_config()["tabu"], seed=seed)
 
 
 def test_qubo_tabu_p01():
@@ -69,4 +98,5 @@ def test_instances_match_matlab():
     inst = generate_instances(100, 2026, 10, 48, 100, 0.5)
     assert len(inst) == 100
     assert inst[0].family == "uncorrelated" and inst[0].values.size == 10
-    assert inst[0].capacity == 285 and knapsack_dp(inst[0].values, inst[0].weights, 285)[0] == 345
+    assert inst[0].capacity == 285
+    assert kp_algo_dp_main(inst[0].values, inst[0].weights, 285)[1]["value"] == 345

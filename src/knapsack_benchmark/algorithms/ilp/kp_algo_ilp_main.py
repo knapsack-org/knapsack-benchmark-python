@@ -1,4 +1,4 @@
-"""Exact 0-1 knapsack as an integer linear program (counterpart of kb_knapsack_ilp.m).
+"""Exact 0-1 knapsack as an integer linear program (counterpart of kp_algo_ilp_main.m).
 
     max v'x  s.t.  w'x <= C,  x binary
 
@@ -13,6 +13,8 @@ import sys
 
 import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
+
+SOLVER = "scipy.optimize.milp (HiGHS)"
 
 
 @contextlib.contextmanager
@@ -38,10 +40,10 @@ def _silence_native_output():
             os.close(fd)
 
 
-def knapsack_ilp(v, w, C) -> tuple[float, list[int], dict]:
-    """Returns (best value, 1-based items, info) with
-    info = {solver, status, proven_optimal, nodes, mip_gap, array_bytes}.
-    array_bytes covers the problem data only (the solver's memory is not visible)."""
+def kp_algo_ilp_main(v, w, C, acfg=None, seed=None, mark=None) -> tuple[list[int], dict]:
+    """Settings, seed and phase marks are not used. Returns (1-based items, info) with
+    info = {value, solver, status, proven_optimal, nodes, mip_gap, working_memory_bytes}.
+    working_memory_bytes covers the problem data only (the solver's memory is not visible)."""
     v = np.asarray(v, float)
     w = np.asarray(w, float)
     with _silence_native_output():
@@ -52,12 +54,13 @@ def knapsack_ilp(v, w, C) -> tuple[float, list[int], dict]:
     take = x > 0.5
     nodes = getattr(res, "mip_node_count", None)
     info = {
-        "solver": "scipy.optimize.milp (HiGHS)",
+        "solver": SOLVER,
         "status": int(res.status),
         "proven_optimal": bool(res.status == 0),
         "nodes": None if nodes is None else int(nodes),
         "mip_gap": None if getattr(res, "mip_gap", None) is None else float(res.mip_gap),
-        "array_bytes": int(2 * v.nbytes + w.nbytes + x.nbytes),
+        "working_memory_bytes": int(2 * v.nbytes + w.nbytes + x.nbytes),
+        "value": float(v[take].sum()),
     }
     items = [int(i) + 1 for i in np.flatnonzero(take)]
-    return float(v[take].sum()), items, info
+    return items, info

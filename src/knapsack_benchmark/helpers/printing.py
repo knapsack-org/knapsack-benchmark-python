@@ -25,10 +25,10 @@ def print_instance(r: dict, algos: list[str], log=print) -> None:
 def print_summary(s: dict, algos: list[str], total_time: float, out_file, log=print) -> None:
     """Summary table, ranking and output file."""
     log(f"\n{'algo':<9} {'optimal':>8} {'mean gap':>9} {'total t(s)':>11} {'median t(s)':>12} "
-        f"{'median mem':>11} {'x time dp':>10} {'mean ops':>12}")
+        f"{'median mem':>11} {'x time ref':>10} {'mean ops':>12}")
     for a in algos:
         p = s["algorithms"][a]
-        ratio = p["median_time_ratio_vs_dp"]
+        ratio = p["median_time_ratio_vs_reference"]
         ops = p["mean_operations"]
         log(f"{a:<9} {p['num_optimal']:>4}/{s['num_instances']:<3} {p['mean_gap_percent']:8.2f}% "
             f"{p['total_wall_time_s']:11.3f} {p['median_wall_time_s']:12.5f} "

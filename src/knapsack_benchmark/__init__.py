@@ -1,8 +1,7 @@
 """Benchmark of 0-1 knapsack algorithms: Python version of knapsack-benchmark-matlab.
 
-Algorithms: ``dp`` (dynamic programming, reference), ``bnb`` (branch and bound),
-``ilp`` (integer linear programming, SciPy/HiGHS), ``qubo`` (QUBO + tabu search)
-and ``qubo_chz`` (independent copy of ``qubo``).
+Algorithms: one self-contained package per algorithm in ``algorithms/<id>/``, found by
+``helpers.discover.discover_algorithms`` (``dp`` is the reference).
 """
 from .benchmark import run_benchmark
 from .config import benchmark_config

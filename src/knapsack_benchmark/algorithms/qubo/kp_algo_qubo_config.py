@@ -1,7 +1,7 @@
-"""Default settings of 'qubo' (block cfg["qubo"]; port of kb_config_qubo.m)."""
+"""Settings of 'qubo' (block cfg["qubo"]; port of kp_algo_qubo_config.m)."""
 
 
-def config_qubo() -> dict:
+def kp_algo_qubo_config() -> dict:
     return {
         "penalty": "auto",             # 'auto' = max(values) + 1, or a number
         "tabu": {
