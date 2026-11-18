@@ -16,10 +16,10 @@ from pathlib import Path
 import numpy as np
 import scipy
 
+from .algorithms.algorithm_loader import check_algorithms
 from .algorithms.dp.dp import knapsack_dp
 from .config import benchmark_config
 from .helpers.add_ratios_vs_dp import add_ratios_vs_dp
-from .helpers.check_algorithms import check_algorithms
 from .helpers.measure import process_memory
 from .helpers.printing import print_instance, print_summary
 from .helpers.run_algorithm import run_algorithm

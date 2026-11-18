@@ -1,17 +1,10 @@
 """Run one algorithm with its timing repeats and build its result (port of kb_run_algorithm.m)."""
 from __future__ import annotations
 
-from importlib import import_module
-
 import numpy as np
 
+from ..algorithms.algorithm_loader import adapter
 from .measure import measure
-
-
-def adapter(name: str):
-    """The benchmark adapter algorithms/<name>/algo_<name>.py:algo_<name>."""
-    module = import_module(f"..algorithms.{name}.algo_{name}", __package__)
-    return getattr(module, f"algo_{name}")
 
 
 def run_algorithm(name, v, w, C, cfg, k, optimum) -> dict:

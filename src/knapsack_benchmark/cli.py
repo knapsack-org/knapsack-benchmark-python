@@ -6,7 +6,7 @@ import json
 import sys
 
 from .benchmark import run_benchmark
-from .config import ALGORITHMS
+from .algorithms.algorithm_loader import ALGORITHMS
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -69,7 +69,6 @@ knapsack-benchmark-python/
 │   ├── benchmark.py           run_benchmark: generate → run each algorithm (measured) → compare → JSON
 │   ├── config.py              all parameters (same keys and defaults as benchmark_config.m)
 │   ├── helpers/
-│   │   ├── check_algorithms.py    validate the requested algorithm ids
 │   │   ├── run_algorithm.py       run one algorithm with its repeats → result + cost
 │   │   ├── add_ratios_vs_dp.py    cost ratios to dp
 │   │   ├── summary.py             per-algorithm / per-family summary
@@ -81,6 +80,7 @@ knapsack-benchmark-python/
 │   │   ├── instances.py       100 reproducible instances (Pisinger families)
 │   │   └── config_instances.py    generator settings (block cfg["instances"])
 │   └── algorithms/            one subpackage per algorithm (+ config_<id>.py settings, algo_<id>.py adapter), same layout as the MATLAB src/algorithms/
+│       ├── algorithm_loader.py  registry ALGORITHMS (add new algorithms here), default settings, id check, adapter lookup
 │       ├── dp/dp.py           dynamic programming 0-1
 │       ├── bnb/bnb.py         branch and bound
 │       ├── ilp/ilp.py         integer linear programming (scipy milp / HiGHS)
