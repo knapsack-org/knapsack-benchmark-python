@@ -137,7 +137,7 @@ Median per instance, measured on different machines (Python in a Linux container
 | `qubo` / `qubo_chz` | 0.19 s | 0.64 s | 15 kB | 15 kB |
 | Total run | 45 s | 153 s | | |
 
-GLPK through Octave is faster than HiGHS through SciPy on these tiny problems (HiGHS has a larger fixed set-up cost); the other algorithms run faster in Python/NumPy than in Octave.
+GLPK through Octave is faster than HiGHS through SciPy on these tiny problems (HiGHS has a larger fixed set-up cost); the other algorithms run faster in Python/NumPy than in Octave. The Octave `qubo` / `qubo_chz` times predate the phase-3 speed-ups (about 3× faster since, same results).
 
 ## Cost measures
 
