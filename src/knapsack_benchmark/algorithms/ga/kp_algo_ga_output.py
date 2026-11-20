@@ -22,28 +22,3 @@ def entry(acfg, env=None) -> dict:
     return {"id": L["id"], "label": _LABEL, "description": L["description"],
             "short_label": L["short_label"], "exact": L["exact"],
             "reference": L["reference"], "config": acfg}
-
-
-SCHEMA = {
-    "entry": {
-        "type": "object", "additionalProperties": False,
-        "required": ["id", "label", "description", "short_label", "exact", "reference", "config"],
-        "properties": {
-            "id": {"enum": ["ga"]}, "label": {"type": "string"}, "description": {"type": "string"},
-            "short_label": {"type": "string"},
-            "exact": {"type": "boolean"}, "reference": {"type": "boolean"},
-            "config": {
-                "type": "object", "additionalProperties": False,
-                "required": ["pop_size", "generations", "tournament", "crossover_rate",
-                             "mutation_factor", "repeats"],
-                "properties": {"pop_size": {"type": "integer", "minimum": 2},
-                               "generations": {"type": "integer", "minimum": 0},
-                               "tournament": {"type": "integer", "minimum": 1},
-                               "crossover_rate": {"type": "number", "minimum": 0},
-                               "mutation_factor": {"type": "number", "minimum": 0},
-                               "repeats": {"type": "integer", "minimum": 1}}}}},
-    "details": {
-        "type": "object", "additionalProperties": False,
-        "required": ["evaluations", "generations"],
-        "properties": {"evaluations": {"type": "integer", "minimum": 0},
-                       "generations": {"type": "integer", "minimum": 0}}}}

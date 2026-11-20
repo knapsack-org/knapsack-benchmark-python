@@ -2,7 +2,7 @@
 
 run(v, w, C, acfg, seed)  runs kp_algo_bnb_main, returns the common result dict
 entry(acfg, env)          entry of the JSON "algorithms" array
-SCHEMA                    JSON Schema of that entry ("entry") and of results.bnb.details ("details")
+JSON Schema of both: kp_algo_bnb_output.schema.json (next to this file)
 """
 from __future__ import annotations
 
@@ -25,30 +25,3 @@ def entry(acfg, env):
     return {"id": L["id"], "label": L["label"], "description": L["description"],
             "short_label": L["short_label"],
             "exact": L["exact"], "reference": L["reference"], "config": acfg}
-
-
-SCHEMA = {
-    "entry": {
-    "type": "object", "additionalProperties": False,
-    "required": ["id", "label", "description", "short_label", "exact", "reference", "config"],
-    "properties": {
-        "id": {"enum": ["bnb"]}, "label": {"type": "string"},
-        "description": {"type": "string"},
-        "short_label": {"type": "string"}, "exact": {"type": "boolean"},
-        "reference": {"type": "boolean"},
-        "config": {
-            "type": "object", "additionalProperties": False,
-            "required": ["max_nodes", "repeats"],
-            "properties": {"max_nodes": {"type": "integer", "minimum": 1},
-                           "repeats": {"type": "integer", "minimum": 1}},
-        },
-    },
-},
-    "details": {
-        "type": "object", "additionalProperties": False,
-        "required": ["nodes", "node_limit", "node_limit_reached"],
-        "properties": {"nodes": {"type": "integer", "minimum": 0},
-                       "node_limit": {"type": "integer", "minimum": 1},
-                       "node_limit_reached": {"type": "boolean"}},
-    },
-}

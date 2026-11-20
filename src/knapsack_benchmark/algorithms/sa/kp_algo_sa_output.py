@@ -24,30 +24,3 @@ def entry(acfg, env=None) -> dict:
     return {"id": L["id"], "label": _LABEL, "description": L["description"],
             "short_label": L["short_label"], "exact": L["exact"],
             "reference": L["reference"], "config": acfg}
-
-
-SCHEMA = {
-    "entry": {
-        "type": "object", "additionalProperties": False,
-        "required": ["id", "label", "description", "short_label", "exact", "reference", "config"],
-        "properties": {
-            "id": {"enum": ["sa"]}, "label": {"type": "string"}, "description": {"type": "string"},
-            "short_label": {"type": "string"},
-            "exact": {"type": "boolean"}, "reference": {"type": "boolean"},
-            "config": {
-                "type": "object", "additionalProperties": False,
-                "required": ["penalty", "restarts", "steps_factor", "t0_factor", "t_end_factor",
-                             "repeats"],
-                "properties": {"penalty": {"type": ["string", "number"]},
-                               "restarts": {"type": "integer", "minimum": 1},
-                               "steps_factor": {"type": "number", "minimum": 0},
-                               "t0_factor": {"type": "number", "minimum": 0},
-                               "t_end_factor": {"type": "number", "minimum": 0},
-                               "repeats": {"type": "integer", "minimum": 1}}}}},
-    "details": {
-        "type": "object", "additionalProperties": False,
-        "required": ["penalty", "proposals", "accepted", "t_start", "t_end"],
-        "properties": {"penalty": {"type": "number"},
-                       "proposals": {"type": "integer", "minimum": 0},
-                       "accepted": {"type": "integer", "minimum": 0},
-                       "t_start": {"type": "number"}, "t_end": {"type": "number"}}}}

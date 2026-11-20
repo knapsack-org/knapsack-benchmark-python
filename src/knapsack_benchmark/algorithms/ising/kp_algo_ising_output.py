@@ -38,36 +38,3 @@ def entry(acfg, env=None) -> dict:
 
 _INT = {"type": "integer", "minimum": 0}
 _NUM = {"type": "number"}
-SCHEMA = {
-    "entry": {
-        "type": "object", "additionalProperties": False,
-        "required": ["id", "label", "description", "short_label", "exact", "reference", "config"],
-        "properties": {
-            "id": {"enum": [_ID]}, "label": {"type": "string"}, "description": {"type": "string"},
-            "short_label": {"type": "string"},
-            "exact": {"type": "boolean"}, "reference": {"type": "boolean"},
-            "config": {
-                "type": "object", "additionalProperties": False,
-                "required": ["penalty", "restarts", "steps_factor", "t0_factor", "t_end_factor",
-                             "repeats"],
-                "properties": {"penalty": {"type": ["string", "number"]},
-                               "restarts": {"type": "integer", "minimum": 1},
-                               "steps_factor": {"type": "number", "minimum": 0},
-                               "t0_factor": {"type": "number", "minimum": 0},
-                               "t_end_factor": {"type": "number", "minimum": 0},
-                               "repeats": {"type": "integer", "minimum": 1}}}}},
-    "details": {
-        "type": "object", "additionalProperties": False,
-        "required": ["penalty", "variables", "slack_bits", "model_memory_bytes", "energy",
-                     "proposals", "accepted", "raw_items", "raw_value", "raw_weight",
-                     "feasible_before_repair", "repaired", "build_time_s", "solve_time_s",
-                     "decode_time_s"],
-        "properties": {"penalty": _NUM, "variables": {"type": "integer", "minimum": 1},
-                       "slack_bits": _INT, "model_memory_bytes": _INT, "energy": _NUM,
-                       "proposals": _INT, "accepted": _INT,
-                       "raw_items": {"type": "array", "items": {"type": "integer", "minimum": 1}},
-                       "raw_value": _NUM, "raw_weight": _NUM,
-                       "feasible_before_repair": {"type": "boolean"}, "repaired": {"type": "boolean"},
-                       "build_time_s": {"type": "number", "minimum": 0},
-                       "solve_time_s": {"type": "number", "minimum": 0},
-                       "decode_time_s": {"type": "number", "minimum": 0}}}}

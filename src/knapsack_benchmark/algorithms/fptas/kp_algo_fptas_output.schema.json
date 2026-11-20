@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "entry": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "label",
+      "description",
+      "short_label",
+      "exact",
+      "reference",
+      "config"
+    ],
+    "properties": {
+      "id": {
+        "enum": [
+          "fptas"
+        ]
+      },
+      "label": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "short_label": {
+        "type": "string"
+      },
+      "exact": {
+        "type": "boolean"
+      },
+      "reference": {
+        "type": "boolean"
+      },
+      "config": {
+        "type": "object"
+      }
+    }
+  },
+  "config": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "epsilon",
+      "repeats"
+    ],
+    "properties": {
+      "epsilon": {
+        "type": "number",
+        "minimum": 0
+      },
+      "repeats": {
+        "type": "integer",
+        "minimum": 1
+      }
+    }
+  },
+  "details": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "epsilon",
+      "scale",
+      "scaled_profit_total",
+      "table_cells"
+    ],
+    "properties": {
+      "epsilon": {
+        "type": "number",
+        "minimum": 0
+      },
+      "scale": {
+        "type": "number",
+        "minimum": 0
+      },
+      "scaled_profit_total": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "table_cells": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  }
+}

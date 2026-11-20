@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "entry": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "label",
+      "description",
+      "short_label",
+      "exact",
+      "reference",
+      "config"
+    ],
+    "properties": {
+      "id": {
+        "enum": [
+          "ising"
+        ]
+      },
+      "label": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "short_label": {
+        "type": "string"
+      },
+      "exact": {
+        "type": "boolean"
+      },
+      "reference": {
+        "type": "boolean"
+      },
+      "config": {
+        "type": "object"
+      }
+    }
+  },
+  "config": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "penalty",
+      "restarts",
+      "steps_factor",
+      "t0_factor",
+      "t_end_factor",
+      "repeats"
+    ],
+    "properties": {
+      "penalty": {
+        "type": [
+          "string",
+          "number"
+        ]
+      },
+      "restarts": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "steps_factor": {
+        "type": "number",
+        "minimum": 0
+      },
+      "t0_factor": {
+        "type": "number",
+        "minimum": 0
+      },
+      "t_end_factor": {
+        "type": "number",
+        "minimum": 0
+      },
+      "repeats": {
+        "type": "integer",
+        "minimum": 1
+      }
+    }
+  },
+  "details": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "penalty",
+      "variables",
+      "slack_bits",
+      "model_memory_bytes",
+      "energy",
+      "proposals",
+      "accepted",
+      "raw_items",
+      "raw_value",
+      "raw_weight",
+      "feasible_before_repair",
+      "repaired",
+      "build_time_s",
+      "solve_time_s",
+      "decode_time_s"
+    ],
+    "properties": {
+      "penalty": {
+        "type": "number"
+      },
+      "variables": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "slack_bits": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "model_memory_bytes": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "energy": {
+        "type": "number"
+      },
+      "proposals": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "accepted": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "raw_items": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "raw_value": {
+        "type": "number"
+      },
+      "raw_weight": {
+        "type": "number"
+      },
+      "feasible_before_repair": {
+        "type": "boolean"
+      },
+      "repaired": {
+        "type": "boolean"
+      },
+      "build_time_s": {
+        "type": "number",
+        "minimum": 0
+      },
+      "solve_time_s": {
+        "type": "number",
+        "minimum": 0
+      },
+      "decode_time_s": {
+        "type": "number",
+        "minimum": 0
+      }
+    }
+  }
+}

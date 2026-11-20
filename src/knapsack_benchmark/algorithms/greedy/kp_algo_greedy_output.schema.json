@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "entry": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "label",
+      "description",
+      "short_label",
+      "exact",
+      "reference",
+      "config"
+    ],
+    "properties": {
+      "id": {
+        "enum": [
+          "greedy"
+        ]
+      },
+      "label": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "short_label": {
+        "type": "string"
+      },
+      "exact": {
+        "type": "boolean"
+      },
+      "reference": {
+        "type": "boolean"
+      },
+      "config": {
+        "type": "object"
+      }
+    }
+  },
+  "config": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "repeats"
+    ],
+    "properties": {
+      "repeats": {
+        "type": "integer",
+        "minimum": 1
+      }
+    }
+  },
+  "details": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "greedy_value",
+      "single_value",
+      "chose_single"
+    ],
+    "properties": {
+      "greedy_value": {
+        "type": "number",
+        "minimum": 0
+      },
+      "single_value": {
+        "type": "number",
+        "minimum": 0
+      },
+      "chose_single": {
+        "type": "boolean"
+      }
+    }
+  }
+}

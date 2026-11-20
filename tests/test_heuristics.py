@@ -9,7 +9,7 @@ import pytest
 
 from knapsack_benchmark.algorithms.qubo.modules import qubo as q
 from knapsack_benchmark.algorithms.ising.modules.ising import knapsack2ising
-from knapsack_benchmark.helpers.schema import validate
+from knapsack_benchmark.helpers.discover import output_schema
 
 W = np.array([23, 31, 29, 44, 53, 38, 63, 85, 89, 82], float)
 V = np.array([92, 57, 49, 68, 60, 43, 67, 84, 87, 72], float)
@@ -26,14 +26,16 @@ def _cfg(algo_id):
 
 
 @pytest.mark.parametrize("algo_id", IDS)
-def test_adapter_contract(algo_id):
+def test_adapter_contract(algo_id, conforms):
     out = _mod(algo_id, "output")
     acfg = _cfg(algo_id)
     res = out.run(V, W, C, acfg, 2026)
     assert W[np.array(res["items"]) - 1].sum() <= C
     assert res["exact"] is False and res["proven_optimal"] is False
-    validate(res["details"], out.SCHEMA["details"], f"{algo_id}.details")
-    validate(out.entry(acfg, {}), out.SCHEMA["entry"], algo_id)
+    schema = output_schema(algo_id)
+    conforms(res["details"], schema["details"], f"{algo_id}.details")
+    conforms(out.entry(acfg, {}), schema["entry"], algo_id)
+    conforms(acfg, schema["config"], f"{algo_id}.config")
 
 
 def test_greedy_half_guarantee():

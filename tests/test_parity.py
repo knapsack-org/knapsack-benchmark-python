@@ -1,20 +1,19 @@
 """Parity with the MATLAB/Octave project: same instances and same results.
 
-Expected values come from the Octave 11.3 run of knapsack-benchmark-matlab
-(100 instances, seed 2026, 5 algorithms; unchanged in the v2 run run-16-11-26-16-38.json
-and the v3 run run-18-11-26-19-12.json).
-DP, B&B, QUBO and QUBO CHZ match it exactly (values, items, B&B nodes, tabu
-iterations, energies); ILP matches on values (HiGHS and GLPK may return a
-different optimal item set when several optima exist).
+Expected values come from the Octave 11.3 runs of knapsack-benchmark-matlab (100 instances,
+seed 2026). DP, B&B, QUBO and QUBO CHZ match them exactly (values, items, B&B nodes, tabu
+iterations, energies); ILP matches on values (HiGHS and GLPK may return a different optimal
+item set when several optima exist). The slow test checks the raw results (raw.json) of a CLI run.
 """
-import pytest
+import json
+import statistics
 
-from pathlib import Path
+import pytest
 
 from knapsack_benchmark.algorithms.bnb.kp_algo_bnb_main import kp_algo_bnb_main
 from knapsack_benchmark.algorithms.dp.kp_algo_dp_main import kp_algo_dp_main
+from knapsack_benchmark.cli import main
 from knapsack_benchmark.instances.instances import generate_instances
-from knapsack_benchmark.benchmark import run_benchmark
 
 # QUBO final values of the 100 instances (Octave reference runs)
 QUBO_100 = [345, 218, 369, 476, 315, 378, 495, 275, 484, 489, 397, 394, 568, 429, 437, 709, 506, 650,
@@ -38,20 +37,20 @@ def test_bnb_nodes_and_optimum():
 
 
 @pytest.mark.slow
-def test_full_run_matches_octave():
-    res = run_benchmark()                 # writes output/run-*.json, removed below
-    Path(res["output_file"]).unlink()
-    assert res["schema_version"] == 3 and res["reference_algorithm"] == "dp"
-    ids = [a["id"] for a in res["algorithms"]]
-    assert ids == sorted(ids) and {"bnb", "dp", "ilp", "qubo", "qubo_chz"} <= set(ids)
-    s = res["summary"]["algorithms"]
-    for a in ("dp", "bnb", "ilp"):
-        assert s[a]["num_optimal"] == 100
+def test_full_run_matches_octave(tmp_path):
+    req = tmp_path / "req.json"
+    req.write_text(json.dumps({"algorithms": ["bnb", "ilp", "qubo", "qubo_chz"]}))
+    assert main(["--request", str(req), "--out", str(tmp_path)]) == 0
+    raw = json.loads((tmp_path / "raw.json").read_text())
+    assert raw["format"] == "knapsack-raw" and raw["reference_algorithm"] == "dp"
+    assert [a["id"] for a in raw["algorithms"]] == ["bnb", "dp", "ilp", "qubo", "qubo_chz"]
+    assert len(json.loads((tmp_path / "instances.json").read_text())["instances"]) == 100
+    value = lambda a: [r["results"][a]["value"] for r in raw["instances"]]   # noqa: E731
+    opt = value("dp")
+    assert value("bnb") == opt and value("ilp") == opt
     for a in ("qubo", "qubo_chz"):
-        assert s[a]["num_optimal"] == 44
-        assert s[a]["num_feasible"] == 100
-        assert abs(s[a]["mean_gap_percent"] - 1.0215814662272313) < 1e-9
-    for a in ("qubo", "qubo_chz"):
-        assert [r["results"][a]["value"] for r in res["instances"]] == QUBO_100
-    for r in res["instances"]:
-        assert r["results"]["ilp"]["value"] == r["optimum"]
+        assert value(a) == QUBO_100
+        assert sum(x == o for x, o in zip(value(a), opt)) == 44
+        assert all(r["results"][a]["feasible"] for r in raw["instances"])
+        gap = statistics.mean(100 * (o - x) / o for x, o in zip(value(a), opt))
+        assert abs(gap - 1.0215814662272313) < 1e-9
