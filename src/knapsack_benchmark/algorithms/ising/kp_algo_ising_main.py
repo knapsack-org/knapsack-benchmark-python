@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .modules.ising import decode, ising_anneal, knapsack2ising, penalty_value
+from .modules.ising import decode, ising_anneal, knapsack2ising, penalty_value, slack_weights
 
 
 def kp_algo_ising_main(v, w, C, acfg, seed, mark=None) -> tuple[list[int], dict]:
@@ -22,7 +22,8 @@ def kp_algo_ising_main(v, w, C, acfg, seed, mark=None) -> tuple[list[int], dict]
     J, h, E0, slack_bits = knapsack2ising(v, w, C, penalty)
     mark("build")
 
-    s, energy, stats = ising_anneal(J, h, E0, acfg, seed, penalty * float(w.max()))
+    a = np.concatenate([w, slack_weights(C)])              # J = (P/2) (a a' - diag(a.a))
+    s, energy, stats = ising_anneal(J, h, E0, acfg, seed, penalty * float(w.max()), a, penalty)
     mark("solve")
 
     sol = decode(s, v, w, C)

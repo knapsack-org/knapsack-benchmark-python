@@ -25,6 +25,19 @@ def lcg(state: int, count: int = 1) -> tuple[np.ndarray, int]:
     return u, state
 
 
+def lcg_powers(count: int) -> np.ndarray:
+    """16807**k mod M31 for k = 1 .. count (int64). ``lcg_powers(count) * state % M31`` are the
+    states after 1 .. count draws from ``state`` (products < 2**62, exact): the stream of ``lcg``
+    in one vector operation (``states / M31`` are its numbers)."""
+    p = np.empty(count, np.int64)
+    p[:1], k = 16807, 1
+    while k < count:                               # doubling: p[k + i] = p[i] * p[k - 1]
+        m = min(k, count - k)
+        p[k:k + m] = p[:m] * p[k - 1] % M31
+        k += m
+    return p
+
+
 def randi(state: int, lo: int, hi: int, count: int = 1) -> tuple[np.ndarray, int]:
     """``count`` integers uniformly drawn from ``lo..hi`` (as floats, like MATLAB)."""
     u, state = lcg(state, count)
