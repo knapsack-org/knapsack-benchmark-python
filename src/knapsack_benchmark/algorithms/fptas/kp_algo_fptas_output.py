@@ -24,23 +24,3 @@ def entry(acfg, env=None) -> dict:
     return {"id": L["id"], "label": _LABEL, "description": L["description"],
             "short_label": L["short_label"], "exact": L["exact"],
             "reference": L["reference"], "config": acfg}
-
-
-SCHEMA = {
-    "entry": {
-        "type": "object", "additionalProperties": False,
-        "required": ["id", "label", "description", "short_label", "exact", "reference", "config"],
-        "properties": {
-            "id": {"enum": ["fptas"]}, "label": {"type": "string"}, "description": {"type": "string"},
-            "short_label": {"type": "string"},
-            "exact": {"type": "boolean"}, "reference": {"type": "boolean"},
-            "config": {"type": "object", "additionalProperties": False,
-                       "required": ["epsilon", "repeats"],
-                       "properties": {"epsilon": {"type": "number", "minimum": 0},
-                                      "repeats": {"type": "integer", "minimum": 1}}}}},
-    "details": {
-        "type": "object", "additionalProperties": False,
-        "required": ["epsilon", "scale", "scaled_profit_total", "table_cells"],
-        "properties": {"epsilon": {"type": "number", "minimum": 0}, "scale": {"type": "number", "minimum": 0},
-                       "scaled_profit_total": {"type": "integer", "minimum": 0},
-                       "table_cells": {"type": "integer", "minimum": 0}}}}

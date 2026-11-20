@@ -23,21 +23,3 @@ def entry(acfg, env=None) -> dict:
     return {"id": L["id"], "label": _LABEL, "description": L["description"],
             "short_label": L["short_label"], "exact": L["exact"],
             "reference": L["reference"], "config": acfg}
-
-
-SCHEMA = {
-    "entry": {
-        "type": "object", "additionalProperties": False,
-        "required": ["id", "label", "description", "short_label", "exact", "reference", "config"],
-        "properties": {
-            "id": {"enum": ["greedy"]}, "label": {"type": "string"}, "description": {"type": "string"},
-            "short_label": {"type": "string"},
-            "exact": {"type": "boolean"}, "reference": {"type": "boolean"},
-            "config": {"type": "object", "additionalProperties": False, "required": ["repeats"],
-                       "properties": {"repeats": {"type": "integer", "minimum": 1}}}}},
-    "details": {
-        "type": "object", "additionalProperties": False,
-        "required": ["greedy_value", "single_value", "chose_single"],
-        "properties": {"greedy_value": {"type": "number", "minimum": 0},
-                       "single_value": {"type": "number", "minimum": 0},
-                       "chose_single": {"type": "boolean"}}}}

@@ -2,7 +2,7 @@
 
 run(v, w, C, acfg, seed)  runs kp_algo_ilp_main, returns the common result dict
 entry(acfg, env)          entry of the JSON "algorithms" array (env = loader environment)
-SCHEMA                    JSON Schema of that entry ("entry") and of results.ilp.details ("details")
+JSON Schema of both: kp_algo_ilp_output.schema.json (next to this file)
 """
 from __future__ import annotations
 
@@ -29,27 +29,3 @@ def entry(acfg, env):
     return {"id": L["id"], "label": _label(env["solver"]), "description": L["description"],
             "short_label": L["short_label"],
             "exact": L["exact"], "reference": L["reference"], "config": acfg}
-
-
-SCHEMA = {
-    "entry": {
-    "type": "object", "additionalProperties": False,
-    "required": ["id", "label", "description", "short_label", "exact", "reference", "config"],
-    "properties": {
-        "id": {"enum": ["ilp"]}, "label": {"type": "string"},
-        "description": {"type": "string"},
-        "short_label": {"type": "string"}, "exact": {"type": "boolean"},
-        "reference": {"type": "boolean"},
-        "config": {
-            "type": "object", "additionalProperties": False, "required": ["repeats"],
-            "properties": {"repeats": {"type": "integer", "minimum": 1}},
-        },
-    },
-},
-    "details": {
-        "type": "object", "additionalProperties": False,
-        "required": ["solver", "status", "mip_gap"],
-        "properties": {"solver": {"type": "string"}, "status": {"type": "integer"},
-                       "mip_gap": {"type": ["number", "null"]}},
-    },
-}
