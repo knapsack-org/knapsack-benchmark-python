@@ -42,9 +42,15 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
-      "repeats"
+      "repeats",
+      "time_limit_s"
     ],
     "properties": {
+      "time_limit_s": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "maximum": 300
+      },
       "repeats": {
         "type": "integer",
         "minimum": 1

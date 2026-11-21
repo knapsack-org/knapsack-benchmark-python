@@ -41,15 +41,19 @@ def _silence_native_output():
 
 
 def kp_algo_ilp_main(v, w, C, acfg=None, seed=None, mark=None) -> tuple[list[int], dict]:
-    """Settings, seed and phase marks are not used. Returns (1-based items, info) with
+    """acfg["time_limit_s"] caps one solve (default: none; when reached, the best packing found,
+    not proven optimal); seed and phase marks are not used. Returns (1-based items, info) with
     info = {value, solver, status, proven_optimal, nodes, mip_gap, working_memory_bytes}.
     working_memory_bytes covers the problem data only (the solver's memory is not visible)."""
     v = np.asarray(v, float)
     w = np.asarray(w, float)
+    options = {"mip_rel_gap": 0}
+    if acfg and "time_limit_s" in acfg:
+        options["time_limit"] = float(acfg["time_limit_s"])
     with _silence_native_output():
         res = milp(c=-v, integrality=np.ones_like(v), bounds=Bounds(0, 1),
                    constraints=LinearConstraint(w[np.newaxis, :], -np.inf, C),
-                   options={"mip_rel_gap": 0})
+                   options=options)
     x = np.zeros_like(v) if res.x is None else np.round(res.x)
     take = x > 0.5
     nodes = getattr(res, "mip_node_count", None)
