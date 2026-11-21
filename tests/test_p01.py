@@ -10,7 +10,6 @@ from knapsack_benchmark.algorithms.dp.kp_algo_dp_main import kp_algo_dp_main
 from knapsack_benchmark.algorithms.ilp.kp_algo_ilp_main import kp_algo_ilp_main
 from knapsack_benchmark.algorithms.qubo.kp_algo_qubo_config import kp_algo_qubo_config
 from knapsack_benchmark.algorithms.qubo.modules import qubo as q
-from knapsack_benchmark.algorithms.qubo_chz.modules import qubo_chz as qz
 from knapsack_benchmark.cli import main
 from knapsack_benchmark.config import benchmark_config, merge_settings
 from knapsack_benchmark.helpers.discover import DiscoveryError, discover_algorithms, output_schema
@@ -44,7 +43,7 @@ def test_describe_lists_every_algorithm_with_schemas(capsys):
     assert main(["--describe"]) == 0
     d = json.loads(capsys.readouterr().out)
     ids = [e["id"] for e in d["algorithms"]]
-    assert d["project"] == "knapsack-benchmark-python" and len(ids) == 10 and ids == sorted(ids)
+    assert d["project"] == "knapsack-benchmark-python" and len(ids) == 9 and ids == sorted(ids)
     assert set(d["algorithm_schemas"]) == set(ids)
     for s in d["algorithm_schemas"].values():
         assert s["$schema"] == "https://json-schema.org/draft/2020-12/schema"
@@ -122,17 +121,7 @@ def test_qubo_tabu_p01():
     assert abs(q.energy(Q, c, d, x) - f) < 1e-9 and q.decode(x, V, W, C)["final_weight"] <= C
 
 
-def test_qubo_chz_matches_qubo():
-    P = max(V) + 1
-    Qa, ca, da, _ = q.knapsack2qubo(V, W, C, P)
-    Qb, cb, db, _ = qz.knapsack2qubo(V, W, C, P)
-    assert np.array_equal(Qa, Qb) and np.array_equal(ca, cb) and da == db
-    xa, fa, _ = q.qubo_tabu_slack(V, W, C, P, Qa, ca, da, _opts())
-    xb, fb, _ = qz.qubo_tabu_slack(V, W, C, P, Qb, cb, db, _opts())
-    assert np.array_equal(xa, xb) and fa == fb == -309
-
-
-@pytest.mark.parametrize("mod", [q, qz])
+@pytest.mark.parametrize("mod", [q])
 def test_slack_encoding(mod):
     for s in range(18):
         assert (mod.encode_slack(s, 17) * np.array([1, 2, 4, 8, 2])).sum() == s

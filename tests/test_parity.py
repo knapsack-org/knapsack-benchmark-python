@@ -1,7 +1,7 @@
 """Parity with the MATLAB/Octave project: same instances and same results.
 
 Expected values come from the Octave 11.3 runs of knapsack-benchmark-matlab (100 instances,
-seed 2026). DP, B&B, QUBO and QUBO CHZ match them exactly (values, items, B&B nodes, tabu
+seed 2026). DP, B&B and QUBO match them exactly (values, items, B&B nodes, tabu
 iterations, energies); ILP matches on values (HiGHS and GLPK may return a different optimal
 item set when several optima exist). The slow test checks the raw results (raw.json) of a CLI run.
 """
@@ -39,16 +39,16 @@ def test_bnb_nodes_and_optimum():
 @pytest.mark.slow
 def test_full_run_matches_octave(tmp_path):
     req = tmp_path / "req.json"
-    req.write_text(json.dumps({"algorithms": ["bnb", "ilp", "qubo", "qubo_chz"]}))
+    req.write_text(json.dumps({"algorithms": ["bnb", "ilp", "qubo"]}))
     assert main(["--request", str(req), "--out", str(tmp_path)]) == 0
     raw = json.loads((tmp_path / "raw.json").read_text())
     assert raw["format"] == "knapsack-raw" and raw["reference_algorithm"] == "dp"
-    assert [a["id"] for a in raw["algorithms"]] == ["bnb", "dp", "ilp", "qubo", "qubo_chz"]
+    assert [a["id"] for a in raw["algorithms"]] == ["bnb", "dp", "ilp", "qubo"]
     assert len(json.loads((tmp_path / "instances.json").read_text())["instances"]) == 100
     value = lambda a: [r["results"][a]["value"] for r in raw["instances"]]   # noqa: E731
     opt = value("dp")
     assert value("bnb") == opt and value("ilp") == opt
-    for a in ("qubo", "qubo_chz"):
+    for a in ("qubo",):
         assert value(a) == QUBO_100
         assert sum(x == o for x, o in zip(value(a), opt)) == 44
         assert all(r["results"][a]["feasible"] for r in raw["instances"])

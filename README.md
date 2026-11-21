@@ -1,6 +1,6 @@
 # knapsack-benchmark-python
 
-Python version of [`knapsack-benchmark-matlab`](../knapsack-benchmark-matlab): the same benchmark of ten 0-1 knapsack algorithms (`bnb`, `dp`, `fptas`, `ga`, `greedy`, `ilp`, `ising`, `qubo`, `qubo_chz`, `sa`; the table lists the first five), on the same generated instances, with the same raw output (ADR 0014).
+Python version of [`knapsack-benchmark-matlab`](../knapsack-benchmark-matlab): the same benchmark of nine 0-1 knapsack algorithms (`bnb`, `dp`, `fptas`, `ga`, `greedy`, `ilp`, `ising`, `qubo`, `sa`; the table lists the first five), on the same generated instances, with the same raw output (ADR 0014).
 
 | Key | Algorithm | Type | Module |
 |---|---|---|---|
@@ -8,7 +8,6 @@ Python version of [`knapsack-benchmark-matlab`](../knapsack-benchmark-matlab): t
 | `dp` | Dynamic programming 0-1 | exact (reference optimum) | `algorithms/dp/kp_algo_dp_main.py`, NumPy row-by-row table, O(n·C) |
 | `ilp` | Integer linear programming | exact | `algorithms/ilp/kp_algo_ilp_main.py`, `scipy.optimize.milp` (HiGHS, same engine as MATLAB `intlinprog`) |
 | `qubo` | QUBO + tabu search | heuristic | `algorithms/qubo/kp_algo_qubo_main.py` (module `modules/qubo.py`) |
-| `qubo_chz` | QUBO CHZ: independent copy of `qubo` | heuristic | `algorithms/qubo_chz/`, own module `modules/qubo_chz.py` and settings `qubo_chz` |
 
 The algorithms are found by scanning `algorithms/` (one package per algorithm, see [Adding an algorithm](#adding-an-algorithm)) and run in alphabetical order. Every algorithm is run on each instance and measured on **quality** (value, items, feasibility, gap to the optimum of the reference algorithm `dp`, proven optimality) and **execution cost** (wall time, CPU time, working memory, process memory, operations). Output: the raw results `raw.json` (and `instances.json`) in `./output/run-dd-mm-yy-hh-mm/`; the run file (`schema_version` 4: optimum, gaps, ratios, summary) is built from them by `knapsack-output` in [knapsack-server](https://github.com/knapsack-org/knapsack-server).
 
@@ -38,11 +37,11 @@ knapsack-benchmark --describe        # algorithms, default settings and JSON Sch
 
 Output: `raw.json` (`format: "knapsack-raw"`, `format_version` 1: algorithm entries and schemas, parameters, raw results per instance without `is_optimal`, `gap_percent`, `cost_ratio_vs_reference`) and, without `--instances`, `instances.json`. stdout has one line per instance plus progress lines `@@progress {"instance":<id>,"algorithm":"<id>","event":"start"|"done"}` before and after each algorithm. A full run file: `pnpm -C <knapsack-server> knapsack-output <out dir>`.
 
-The settings files: `config.py` (master seed, `timing.trace_memory` for the tracemalloc peak), `instances/config_instances.py` (number and size of instances) and `algorithms/<id>/kp_algo_<id>_config.py` (settings of one algorithm, e.g. `bnb.max_nodes`, `qubo.tabu.mode`, `qubo_chz.seed_offset`).
+The settings files: `config.py` (master seed, `timing.trace_memory` for the tracemalloc peak), `instances/config_instances.py` (number and size of instances) and `algorithms/<id>/kp_algo_<id>_config.py` (settings of one algorithm, e.g. `bnb.max_nodes`, `qubo.tabu.mode`).
 
 From Python: `from knapsack_benchmark import run_benchmark; raw = run_benchmark(request, instances_file, out_dir)` (all optional; returns the raw dict, with `output_dir`).
 
-Tests (`tests/test_p01.py`: every discovered algorithm on P01 through its adapter, keys checked against its schema file; `--describe`; request, `--instances` and shard (global seeds) round trip; P01 = 309 for DP, B&B, ILP; MathWorks `knapsack2qubo` example; tabu searches; slack encoding; `qubo_chz` = `qubo`. `tests/test_parity.py`: identical results to the Octave run; the slow test runs the CLI with `bnb`, `ilp`, `qubo`, `qubo_chz` on the 100 instances into a temporary folder):
+Tests (`tests/test_p01.py`: every discovered algorithm on P01 through its adapter, keys checked against its schema file; `--describe`; request, `--instances` and shard (global seeds) round trip; P01 = 309 for DP, B&B, ILP; MathWorks `knapsack2qubo` example; tabu searches; slack encoding. `tests/test_parity.py`: identical results to the Octave run; the slow test runs the CLI with `bnb`, `ilp`, `qubo` on the 100 instances into a temporary folder):
 
 ```
 pytest                     # all (≈ 75 s)
@@ -73,8 +72,7 @@ knapsack-benchmark-python/
 │       ├── bnb/               kp_algo_bnb_{loader,main,config,output}.py: branch and bound
 │       ├── dp/                kp_algo_dp_*.py: dynamic programming 0-1 (reference)
 │       ├── ilp/               kp_algo_ilp_*.py: integer linear programming (scipy milp / HiGHS)
-│       ├── qubo/              kp_algo_qubo_*.py + modules/qubo.py: knapsack → QUBO, tabu searches, decode, slack encoding
-│       └── qubo_chz/          kp_algo_qubo_chz_*.py + modules/qubo_chz.py: independent copy, to be modified separately
+│       └── qubo/              kp_algo_qubo_*.py + modules/qubo.py: knapsack → QUBO, tabu searches, decode, slack encoding
 ├── tests/test_p01.py, tests/test_parity.py
 └── output/                    run-dd-mm-yy-hh-mm/ folders (git-ignored)
 ```
@@ -105,7 +103,6 @@ Algorithms may import `helpers/` but never another algorithm's package: shared c
 | `algorithms/<id>/kp_algo_<id>_{loader,main,config,output}.m` | `algorithms/<id>/kp_algo_<id>_{loader,main,config,output}.py` (same names) |
 | `kp_algo_ilp_main.m` (glpk / intlinprog) | `kp_algo_ilp_main.py` (scipy `milp`, HiGHS) |
 | `qubo/modules/kb_*.m` (6 files) | `qubo/modules/qubo.py` |
-| `qubo_chz/modules/kb_chz_*.m` | `qubo_chz/modules/qubo_chz.py` |
 | `whos` working memory | `nbytes` of the algorithm's arrays |
 | `memory()` process memory | `psutil` RSS (optional) |
 | `tic`/`toc`, `cputime` | `time.perf_counter`, `time.process_time` |
@@ -117,13 +114,13 @@ Item indices in the JSON are **1-based**, as in the MATLAB version, so both outp
 Checked against the Octave 11.3 run of the MATLAB project (100 instances, seed 2026; unchanged in the v2 run `run-16-11-26-16-38.json` and the v3 run `run-18-11-26-19-12.json`):
 
 - **identical instances** (weights, values, capacities);
-- **DP, B&B, QUBO, QUBO CHZ: identical results** on all 100 instances: values, items, B&B node counts, tabu iteration counts, QUBO energies;
+- **DP, B&B, QUBO: identical results** on all 100 instances: values, items, B&B node counts, tabu iteration counts, QUBO energies;
 - **ILP: identical optimal values**; on 30 instances with several optimal packings, HiGHS (Python) and GLPK (Octave) return different, equally optimal, item sets.
 
 | | Optimal | Mean gap | Max gap |
 |---|---|---|---|
 | `dp`, `bnb`, `ilp` | 100 / 100 | 0 % | 0 % |
-| `qubo`, `qubo_chz` | 44 / 100 | 1.02 % | 4.80 % |
+| `qubo` | 44 / 100 | 1.02 % | 4.80 % |
 
 ## Execution cost: Python vs Octave (same 100 instances)
 
@@ -134,10 +131,10 @@ Median per instance, measured on different machines (Python in a Linux container
 | `dp` | 0.21 ms | 2.7 ms | 171 kB | 171 kB |
 | `bnb` | 0.50 ms | 6.0 ms | 2.1 kB | 2.3 kB |
 | `ilp` | 12.6 ms (HiGHS) | 1.6 ms (GLPK) | 0.9 kB | 0.9 kB |
-| `qubo` / `qubo_chz` | 0.19 s | 0.64 s | 15 kB | 15 kB |
+| `qubo` | 0.19 s | 0.64 s | 15 kB | 15 kB |
 | Total run | 45 s | 153 s | | |
 
-GLPK through Octave is faster than HiGHS through SciPy on these tiny problems (HiGHS has a larger fixed set-up cost); the other algorithms run faster in Python/NumPy than in Octave. The Octave `qubo` / `qubo_chz` times predate the phase-3 speed-ups (about 3× faster since, same results).
+GLPK through Octave is faster than HiGHS through SciPy on these tiny problems (HiGHS has a larger fixed set-up cost); the other algorithms run faster in Python/NumPy than in Octave. The Octave `qubo` times predate the phase-3 speed-ups (about 3× faster since, same results).
 
 ## Cost measures
 
@@ -145,17 +142,15 @@ Each algorithm result has a `cost` object (same fields as the MATLAB version):
 
 | Field | Meaning |
 |---|---|
-| `wall_time_s` / `wall_time_min_s` | median / fastest wall-clock time over the repeats (`perf_counter`). Repeats: dp 5, bnb 1, ilp 3, qubo 1, qubo_chz 1 (`repeats` in `kp_algo_<id>_config.py`) |
+| `wall_time_s` / `wall_time_min_s` | median / fastest wall-clock time over the repeats (`perf_counter`). Repeats: dp 5, bnb 1, ilp 3, qubo 1 (`repeats` in `kp_algo_<id>_config.py`) |
 | `cpu_time_s` | CPU time per run (`process_time`) |
 | `working_memory_bytes` | bytes of the algorithm's own NumPy arrays (DP table; B&B vectors; ILP problem data, not the solver's internal memory; QUBO Q, c and search vectors). Same idea as `whos` in MATLAB, so the two versions are comparable |
 | `traced_peak_memory_bytes` | only with `timing.trace_memory = True` in `config.py`: peak allocated by Python + NumPy during an extra untimed run (`tracemalloc`) |
 | `process_memory_before/after/delta_bytes` | process RSS from `psutil` (optional), `null` without it. Process-wide snapshot: indicative only |
-| `operations` + `operations_unit` | dp: table cells · bnb: nodes · ilp: HiGHS B&B nodes · qubo, qubo_chz: move evaluations |
+| `operations` + `operations_unit` | dp: table cells · bnb: nodes · ilp: HiGHS B&B nodes · qubo: move evaluations |
 
 `cost_ratio_vs_reference` (`time`, `cpu`, `memory`; > 1 means costlier than the reference algorithm `dp`) and the `summary` (per-algorithm statistics, a `by_family` breakdown, `ranking_by_median_time`) are computed by knapsack-server's `knapsack-output` from `raw.json`; the run file format (`schema_version` 4) is described in the `documentation` repo (`functional/output-format.md`). The Python output adds `environment.numpy` / `environment.scipy`, `details.mip_gap` for ILP and `cost.traced_peak_memory_bytes`.
 
 ## Method
 
 Same as the MATLAB project (see its README): Pisinger instance families with sizes 10 → 48 items; DP table; depth-first branch and bound with the Dantzig bound; ILP max v'x s.t. w'x ≤ C, x binary; QUBO f = −Σvᵢxᵢ + P(Σwᵢxᵢ + s − C)² with binary-encoded slack and P = max(v) + 1, solved by a multi-start tabu search on the item bits with optimal slack bits.
-
-**QUBO CHZ (`qubo_chz`).** `qubo_chz/modules/qubo_chz.py` is an independent copy of `qubo/modules/qubo.py` with its own settings block (`qubo_chz.penalty`, `qubo_chz.seed_offset`, `qubo_chz.tabu`). Identical to `qubo` when created; modify it to experiment without affecting `qubo` (the test `test_qubo_chz_matches_qubo` will then fail on purpose: adjust or remove it).
