@@ -6,7 +6,7 @@ Python version of [`knapsack-benchmark-matlab`](../knapsack-benchmark-matlab): t
 |---|---|---|---|
 | `bnb` | Branch and bound | exact | `algorithms/bnb/kp_algo_bnb_main.py`, depth-first, Dantzig (LP) bound, greedy start |
 | `dp` | Dynamic programming 0-1 | exact (reference optimum) | `algorithms/dp/kp_algo_dp_main.py`, NumPy row-by-row table, O(n·C) |
-| `ilp` | Integer linear programming | exact | `algorithms/ilp/kp_algo_ilp_main.py`, `scipy.optimize.milp` (HiGHS, same engine as MATLAB `intlinprog`); `ilp.time_limit_s` (default 10 s per solve): when reached, the best packing found, not proven optimal |
+| `ilp` | Integer linear programming | exact | `algorithms/ilp/kp_algo_ilp_main.py`, `scipy.optimize.milp` (HiGHS, same engine as MATLAB `intlinprog`); `ilp.time_limit_s` (default 60 s per solve): when reached, the best packing found, not proven optimal |
 | `qubo` | QUBO + tabu search | heuristic | `algorithms/qubo/kp_algo_qubo_main.py` (module `modules/qubo.py`) |
 
 The algorithms are found by scanning `algorithms/` (one package per algorithm, see [Adding an algorithm](#adding-an-algorithm)) and run in alphabetical order. Every algorithm is run on each instance and measured on **quality** (value, items, feasibility, gap to the optimum of the reference algorithm `dp`, proven optimality) and **execution cost** (wall time, CPU time, working memory, process memory, operations). Output: the raw results `raw.json` (and `instances.json`) in `./output/run-dd-mm-yy-hh-mm/`; the run file (`schema_version` 4: optimum, gaps, ratios, summary) is built from them by `knapsack-output` in [knapsack-server](https://github.com/knapsack-org/knapsack-server).
