@@ -95,6 +95,18 @@ def test_exact_solvers_p01(solver):
     assert info["value"] == 309 and items == [1, 2, 3, 4, 6]
 
 
+def test_ilp_time_limit():
+    # Instance 69 of seed 2026 with 10..100 items and capacity ratio 0.7 (strongly correlated, n = 72):
+    # GLPK took ~20 min on it; a limit far below the solve time stops the solver, not proven optimal.
+    inst = generate_instances(100, 2026, 10, 100, 100, 0.7)[68]
+    assert inst.family == "strongly_correlated" and len(inst.weights) == 72
+    items, info = kp_algo_ilp_main(inst.values, inst.weights, inst.capacity, {"time_limit_s": 1e-6})
+    assert not info["proven_optimal"] and info["status"] == 1
+    assert inst.weights[[i - 1 for i in items]].sum() <= inst.capacity
+    _, info = kp_algo_ilp_main(V, W, C, {"time_limit_s": 10})
+    assert info["value"] == 309 and info["proven_optimal"]
+
+
 def test_bnb_node_limit():
     _, info = kp_algo_bnb_main(V, W, C, {"max_nodes": 3})
     assert info["value"] <= 309
