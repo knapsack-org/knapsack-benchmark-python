@@ -1,13 +1,15 @@
 # knapsack-benchmark-python
 
-Python version of [`knapsack-benchmark-matlab`](../knapsack-benchmark-matlab): the same benchmark of nine 0-1 knapsack algorithms (`bnb`, `dp`, `fptas`, `ga`, `greedy`, `ilp`, `ising`, `qubo`, `sa`; the table lists the first five), on the same generated instances, with the same raw output (ADR 0014).
+Python version of [`knapsack-benchmark-matlab`](../knapsack-benchmark-matlab): the same benchmark of eleven 0-1 knapsack algorithms (`bnb`, `dp`, `fptas`, `ga`, `greedy`, `ilp`, `ising`, `qc`, `qubo`, `qubo_b`, `sa`; the table lists the exact ones and the QUBO family), on the same generated instances, with the same raw output (ADR 0014).
 
 | Key | Algorithm | Type | Module |
 |---|---|---|---|
 | `bnb` | Branch and bound | exact | `algorithms/bnb/kp_algo_bnb_main.py`, depth-first, Dantzig (LP) bound, greedy start |
 | `dp` | Dynamic programming 0-1 | exact (reference optimum) | `algorithms/dp/kp_algo_dp_main.py`, NumPy row-by-row table, O(n·C) |
 | `ilp` | Integer linear programming | exact | `algorithms/ilp/kp_algo_ilp_main.py`, `scipy.optimize.milp` (HiGHS, same engine as MATLAB `intlinprog`); `ilp.time_limit_s` (default 60 s per solve): when reached, the best packing found, not proven optimal |
-| `qubo` | QUBO + tabu search | heuristic | `algorithms/qubo/kp_algo_qubo_main.py` (module `modules/qubo.py`) |
+| `qubo` | QUBO variant A + tabu search | heuristic | `algorithms/qubo/kp_algo_qubo_main.py` (module `modules/qubo.py`) |
+| `qubo_b` | QUBO variant B + tabu search | heuristic | `algorithms/qubo_b/`: same code as `qubo` (the MathWorks switch is MATLAB only) |
+| `qc` | QC: QUBO + tabu search | heuristic | `algorithms/qc/`: QUBO B code; `modules/qaoa.py` (simulated QAOA) and `modules/greedy.py`, with commented calls in `kp_algo_qc_main.py` |
 
 The algorithms are found by scanning `algorithms/` (one package per algorithm, see [Adding an algorithm](#adding-an-algorithm)) and run in alphabetical order. Every algorithm is run on each instance and measured on **quality** (value, items, feasibility, gap to the optimum of the reference algorithm `dp`, proven optimality) and **execution cost** (wall time, CPU time, working memory, process memory, operations). Output: the raw results `raw.json` (and `instances.json`) in `./output/run-dd-mm-yy-hh-mm/`; the run file (`schema_version` 4: optimum, gaps, ratios, summary) is built from them by `knapsack-output` in [knapsack-server](https://github.com/knapsack-org/knapsack-server).
 
@@ -31,17 +33,17 @@ knapsack-benchmark --describe        # algorithms, default settings and JSON Sch
 
 | Option | Meaning |
 |---|---|
-| `--request` | run request JSON (knapsack-server `RunRequest`): `seed`, `instances` (`count`, `min_items`, `max_items`, `max_coefficient`, `capacity_ratio`), `algorithms` (ids; the reference `dp` is always added), `algorithm_config` (`{<id>: partial settings}`, merged into the defaults; an unknown key is an error). Absent fields come from the settings files; `environments` is ignored |
+| `--request` | run request JSON (knapsack-server `RunRequest`): `seed`, `instances` (`count`, `min_items`, `max_items`, `max_coefficient`, `capacity_ratio`, `correlation`: `families`, `weak_noise_ratio`, `strong_offset_ratio`), `algorithms` (ids; the reference `dp` is always added), `algorithm_config` (`{<id>: partial settings}`, merged into the defaults; an unknown key is an error). Absent fields come from the settings files; `environments` is ignored |
 | `--instances` | instance set JSON (`format: "knapsack-instances"`, the `instances.json` of an earlier run or a knapsack-server shard) used instead of the generator; the per-instance seed stays `seed + 1000 * id` with the file's global ids |
 | `--out` | output directory (default `output/run-dd-mm-yy-hh-mm/`) |
 
 Output: `raw.json` (`format: "knapsack-raw"`, `format_version` 1: algorithm entries and schemas, parameters, raw results per instance without `is_optimal`, `gap_percent`, `cost_ratio_vs_reference`) and, without `--instances`, `instances.json`. stdout has one line per instance plus progress lines `@@progress {"instance":<id>,"algorithm":"<id>","event":"start"|"done"}` before and after each algorithm. A full run file: `pnpm -C <knapsack-server> knapsack-output <out dir>`.
 
-The settings files: `config.py` (master seed, `timing.trace_memory` for the tracemalloc peak), `instances/config_instances.py` (number and size of instances) and `algorithms/<id>/kp_algo_<id>_config.py` (settings of one algorithm, e.g. `bnb.max_nodes`, `qubo.tabu.mode`).
+The settings files: `config.py` (master seed, `timing.trace_memory` for the tracemalloc peak), `instances/config_instances.py` (number and size of instances, correlation: families rotated in order, weak noise and strong offset ratios) and `algorithms/<id>/kp_algo_<id>_config.py` (settings of one algorithm, e.g. `bnb.max_nodes`, `qubo.tabu.mode`).
 
 From Python: `from knapsack_benchmark import run_benchmark; raw = run_benchmark(request, instances_file, out_dir)` (all optional; returns the raw dict, with `output_dir`).
 
-Tests (`tests/test_p01.py`: every discovered algorithm on P01 through its adapter, keys checked against its schema file; `--describe`; request, `--instances` and shard (global seeds) round trip; P01 = 309 for DP, B&B, ILP; MathWorks `knapsack2qubo` example; tabu searches; slack encoding. `tests/test_parity.py`: identical results to the Octave run; the slow test runs the CLI with `bnb`, `ilp`, `qubo` on the 100 instances into a temporary folder):
+Tests (`tests/test_p01.py`: every discovered algorithm on P01 through its adapter, keys checked against its schema file; `--describe`; request, `--instances` and shard (global seeds) round trip; P01 = 309 for DP, B&B, ILP; MathWorks `knapsack2qubo` example; tabu searches; slack encoding. `tests/test_parity.py`: identical results to the Octave run; the slow test runs the CLI with `bnb`, `ilp`, `qc`, `qubo`, `qubo_b` on the 100 instances. `tests/test_qc.py`: correlation settings, `qubo_b` / `qc` = `qubo`, QC greedy and QAOA modules into a temporary folder):
 
 ```
 pytest                     # all (≈ 75 s)
@@ -72,7 +74,9 @@ knapsack-benchmark-python/
 │       ├── bnb/               kp_algo_bnb_{loader,main,config,output}.py: branch and bound
 │       ├── dp/                kp_algo_dp_*.py: dynamic programming 0-1 (reference)
 │       ├── ilp/               kp_algo_ilp_*.py: integer linear programming (scipy milp / HiGHS)
-│       └── qubo/              kp_algo_qubo_*.py + modules/qubo.py: knapsack → QUBO, tabu searches, decode, slack encoding
+│       ├── qc/                QC: QUBO B code + modules/qaoa.py (simulated QAOA), greedy.py, qubo.py (copy)
+│       ├── qubo_b/            QUBO variant B: copy of qubo/
+│       └── qubo/              QUBO variant A: kp_algo_qubo_*.py + modules/qubo.py: knapsack → QUBO, tabu searches, decode, slack encoding
 ├── tests/test_p01.py, tests/test_parity.py
 └── output/                    run-dd-mm-yy-hh-mm/ folders (git-ignored)
 ```
