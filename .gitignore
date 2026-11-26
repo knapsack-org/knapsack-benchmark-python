@@ -1,5 +1,5 @@
 # benchmark results (keep the folder)
-output/*.json
+output/*
 !output/.gitkeep
 __pycache__/
 *.egg-info/
