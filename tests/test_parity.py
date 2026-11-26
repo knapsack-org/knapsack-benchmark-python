@@ -39,16 +39,16 @@ def test_bnb_nodes_and_optimum():
 @pytest.mark.slow
 def test_full_run_matches_octave(tmp_path):
     req = tmp_path / "req.json"
-    req.write_text(json.dumps({"algorithms": ["bnb", "ilp", "qubo"]}))
+    req.write_text(json.dumps({"algorithms": ["bnb", "ilp", "qc", "qubo", "qubo_b"]}))
     assert main(["--request", str(req), "--out", str(tmp_path)]) == 0
     raw = json.loads((tmp_path / "raw.json").read_text())
     assert raw["format"] == "knapsack-raw" and raw["reference_algorithm"] == "dp"
-    assert [a["id"] for a in raw["algorithms"]] == ["bnb", "dp", "ilp", "qubo"]
+    assert [a["id"] for a in raw["algorithms"]] == ["bnb", "dp", "ilp", "qc", "qubo", "qubo_b"]
     assert len(json.loads((tmp_path / "instances.json").read_text())["instances"]) == 100
     value = lambda a: [r["results"][a]["value"] for r in raw["instances"]]   # noqa: E731
     opt = value("dp")
     assert value("bnb") == opt and value("ilp") == opt
-    for a in ("qubo",):
+    for a in ("qubo", "qubo_b", "qc"):   # variant B and QC run the same code as qubo
         assert value(a) == QUBO_100
         assert sum(x == o for x, o in zip(value(a), opt)) == 44
         assert all(r["results"][a]["feasible"] for r in raw["instances"])

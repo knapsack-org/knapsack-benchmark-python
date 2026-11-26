@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "entry": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "label",
+      "description",
+      "short_label",
+      "exact",
+      "reference",
+      "config"
+    ],
+    "properties": {
+      "id": {
+        "enum": [
+          "qc"
+        ]
+      },
+      "label": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "short_label": {
+        "type": "string"
+      },
+      "exact": {
+        "type": "boolean"
+      },
+      "reference": {
+        "type": "boolean"
+      },
+      "config": {
+        "type": "object"
+      }
+    }
+  },
+  "config": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "penalty",
+      "tabu",
+      "qaoa",
+      "repeats"
+    ],
+    "properties": {
+      "penalty": {
+        "type": [
+          "string",
+          "number"
+        ]
+      },
+      "tabu": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode",
+          "restarts",
+          "max_iter_factor",
+          "stall_factor",
+          "tenure_min"
+        ],
+        "properties": {
+          "mode": {
+            "enum": [
+              "slack-optimal",
+              "all-bits"
+            ]
+          },
+          "restarts": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "max_iter_factor": {
+            "type": "number",
+            "minimum": 0
+          },
+          "stall_factor": {
+            "type": "number",
+            "minimum": 0
+          },
+          "tenure_min": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "qaoa": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "layers",
+          "shots",
+          "grid",
+          "refine",
+          "max_qubits"
+        ],
+        "properties": {
+          "layers": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "shots": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "grid": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "refine": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "max_qubits": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 26
+          }
+        }
+      },
+      "repeats": {
+        "type": "integer",
+        "minimum": 1
+      }
+    }
+  },
+  "details": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "penalty",
+      "variables",
+      "slack_bits",
+      "model_memory_bytes",
+      "energy",
+      "iterations",
+      "raw_items",
+      "raw_value",
+      "raw_weight",
+      "feasible_before_repair",
+      "repaired",
+      "build_time_s",
+      "solve_time_s",
+      "decode_time_s"
+    ],
+    "properties": {
+      "penalty": {
+        "type": "number"
+      },
+      "variables": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "slack_bits": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "model_memory_bytes": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "energy": {
+        "type": "number"
+      },
+      "iterations": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "raw_items": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "raw_value": {
+        "type": "number"
+      },
+      "raw_weight": {
+        "type": "number"
+      },
+      "feasible_before_repair": {
+        "type": "boolean"
+      },
+      "repaired": {
+        "type": "boolean"
+      },
+      "build_time_s": {
+        "type": "number",
+        "minimum": 0
+      },
+      "solve_time_s": {
+        "type": "number",
+        "minimum": 0
+      },
+      "decode_time_s": {
+        "type": "number",
+        "minimum": 0
+      }
+    }
+  }
+}

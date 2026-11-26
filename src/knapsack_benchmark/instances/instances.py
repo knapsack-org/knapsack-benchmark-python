@@ -38,16 +38,40 @@ def read_instances(path) -> tuple[list[Instance], dict]:
                      int(i["capacity"]), int(i["id"])) for i in data["instances"]], data["instance_config"]
 
 
+def check_correlation(correlation: dict) -> list[str]:
+    """Families of a correlation block; ValueError on invalid settings (as kb_generate_instances.m)."""
+    families = correlation["families"]
+    if isinstance(families, str):
+        families = [families]
+    families = list(families)
+    if (not families or not all(isinstance(f, str) and f in FAMILIES for f in families)
+            or len(set(families)) != len(families)):
+        raise ValueError(f"correlation.families: 1 to 3 distinct names among {', '.join(FAMILIES)}.")
+    for key in ("weak_noise_ratio", "strong_offset_ratio"):
+        r = correlation[key]
+        if isinstance(r, bool) or not isinstance(r, (int, float)) or not 0 <= r <= 1:
+            raise ValueError(f"correlation.{key} must be in [0, 1].")
+    return families
+
+
 def generate_instances(count: int, seed: int, min_items: int, max_items: int,
-                       R: int, capacity_ratio: float) -> list[Instance]:
+                       R: int, capacity_ratio: float, correlation: dict | None = None) -> list[Instance]:
     """Same generator as ``kb_generate_instances.m``.
 
+    Families rotate in the order of ``correlation["families"]``:
     uncorrelated        v ~ U(1, R)
-    weakly_correlated   v = w + U(-R/10, R/10), at least 1
-    strongly_correlated v = w + R/10
+    weakly_correlated   v = w + U(-k, k), at least 1,  k = floor(weak_noise_ratio * R)
+    strongly_correlated v = w + floor(strong_offset_ratio * R)
     Weights w ~ U(1, R); capacity = floor(capacity_ratio * sum(w)).
     The number of items grows linearly from ``min_items`` to ``max_items``.
+    ``correlation`` = block cfg["instances"]["correlation"] (default: config_instances()).
     """
+    if correlation is None:
+        from .config_instances import config_instances
+        correlation = config_instances()["correlation"]
+    families = check_correlation(correlation)
+    weak = int(np.floor(correlation["weak_noise_ratio"] * R))
+    strong = int(np.floor(correlation["strong_offset_ratio"] * R))
     state = seed_state(seed)
     out: list[Instance] = []
     for k in range(1, count + 1):
@@ -55,14 +79,14 @@ def generate_instances(count: int, seed: int, min_items: int, max_items: int,
             n = mround(min_items + (max_items - min_items) * (k - 1) / (count - 1))
         else:
             n = min_items
-        family = FAMILIES[(k - 1) % len(FAMILIES)]
+        family = families[(k - 1) % len(families)]
         w, state = randi(state, 1, R, n)
         if family == "uncorrelated":
             v, state = randi(state, 1, R, n)
         elif family == "weakly_correlated":
-            noise, state = randi(state, -(R // 10), R // 10, n)
+            noise, state = randi(state, -weak, weak, n)
             v = np.maximum(w + noise, 1)
         else:
-            v = w + R // 10
+            v = w + strong
         out.append(Instance(family, w, v, int(np.floor(capacity_ratio * w.sum())), k))
     return out

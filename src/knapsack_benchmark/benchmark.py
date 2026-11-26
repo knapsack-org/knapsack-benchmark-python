@@ -80,7 +80,7 @@ def run_benchmark(request: dict | None = None, instances_file=None, out_dir=None
         cfg = benchmark_config(request)
         ic = cfg["instances"]
         instances = generate_instances(ic["count"], cfg["seed"], ic["min_items"], ic["max_items"],
-                                       ic["max_coefficient"], ic["capacity_ratio"])
+                                       ic["max_coefficient"], ic["capacity_ratio"], ic["correlation"])
         instance_config = {"seed": cfg["seed"], **ic}
     print(f"{PROJECT} | {', '.join(ids)} | reference {ref} | "
           f"{len(instances)} instances | Python {platform.python_version()}")

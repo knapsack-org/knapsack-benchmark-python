@@ -13,6 +13,7 @@ from knapsack_benchmark.algorithms.qubo.modules import qubo as q
 from knapsack_benchmark.cli import main
 from knapsack_benchmark.config import benchmark_config, merge_settings
 from knapsack_benchmark.helpers.discover import DiscoveryError, discover_algorithms, output_schema
+from knapsack_benchmark.instances.config_instances import config_instances
 from knapsack_benchmark.instances.instances import generate_instances
 
 W = [23, 31, 29, 44, 53, 38, 63, 85, 89, 82]
@@ -43,7 +44,7 @@ def test_describe_lists_every_algorithm_with_schemas(capsys):
     assert main(["--describe"]) == 0
     d = json.loads(capsys.readouterr().out)
     ids = [e["id"] for e in d["algorithms"]]
-    assert d["project"] == "knapsack-benchmark-python" and len(ids) == 9 and ids == sorted(ids)
+    assert d["project"] == "knapsack-benchmark-python" and len(ids) == 11 and ids == sorted(ids)
     assert set(d["algorithm_schemas"]) == set(ids)
     for s in d["algorithm_schemas"].values():
         assert s["$schema"] == "https://json-schema.org/draft/2020-12/schema"
@@ -62,7 +63,8 @@ def test_request_instances_file_and_shard(tmp_path):
     assert [a["id"] for a in full["algorithms"]] == ["dp", "sa"]     # reference always added
     assert full["algorithms"][1]["config"]["restarts"] == 2 and full["parameters"]["seed"] == 7
     assert full["instance_config"] == {"seed": 7, "count": 3, "min_items": 10, "max_items": 12,
-                                       "max_coefficient": 100, "capacity_ratio": 0.5}
+                                       "max_coefficient": 100, "capacity_ratio": 0.5,
+                                       "correlation": config_instances()["correlation"]}
     assert iset["format"] == "knapsack-instances" and [i["id"] for i in iset["instances"]] == [1, 2, 3]
     assert all("is_optimal" not in r and "gap_percent" not in r
                for i in full["instances"] for r in i["results"].values())
